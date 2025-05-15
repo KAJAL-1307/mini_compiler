@@ -1,26 +1,106 @@
+
 %{
 #include <stdio.h>
 #include <stdlib.h>
 
 int yylex();
-void yyerror(const char *s);
+void yyerror(const char *s) {
+  printf("Parse error: %s\n", s);
+}
 %}
 
-%token NUMBER
+%union {
+  int ival;
+  float fval;
+  char* str;
+}
+
+%token <ival> NUMBER
+%token <fval> FLOAT
+%token <str> ID
+
+%token INT FLOAT CHAR BOOL
+%token PRINT SCAN
+%token IF ELSE WHILE FOR
+%token EQ NEQ GTE LTE GT LT ASSIGN
+%token SEMICOLON LPAREN RPAREN LBRACE RBRACE
+%token PLUS MINUS MUL DIV
 
 %%
 
+program:
+    statements
+    ;
+
+statements:
+    statements statement
+    | statement
+    ;
+
+statement:
+      declaration SEMICOLON
+    | assignment SEMICOLON
+    | print_call SEMICOLON
+    | scan_call SEMICOLON
+    | if_statement
+    | loop_statement
+    ;
+
+declaration:
+      INT ID
+    | FLOAT ID
+    | CHAR ID
+    | BOOL ID
+    ;
+
+assignment:
+      ID ASSIGN expr
+    ;
+
 expr:
-      expr '+' expr   { printf("%d\n", $1 + $3); }
-    | expr '-' expr   { printf("%d\n", $1 - $3); }
-    | expr '*' expr   { printf("%d\n", $1 * $3); }
-    | expr '/' expr   { printf("%d\n", $1 / $3); }
-    | '(' expr ')'    { $$ = $2; }
-    | NUMBER          { $$ = $1; }
+      expr PLUS expr
+    | expr MINUS expr
+    | expr MUL expr
+    | expr DIV expr
+    | NUMBER
+    | FLOAT
+    | ID
+    ;
+
+print_call:
+    PRINT LPAREN expr RPAREN
+    ;
+
+scan_call:
+    SCAN LPAREN ID RPAREN
+    ;
+
+if_statement:
+    IF LPAREN condition RPAREN block
+    | IF LPAREN condition RPAREN block ELSE block
+    ;
+
+condition:
+      expr EQ expr
+    | expr NEQ expr
+    | expr GT expr
+    | expr LT expr
+    | expr GTE expr
+    | expr LTE expr
+    ;
+
+block:
+    LBRACE statements RBRACE
+    ;
+
+loop_statement:
+    WHILE LPAREN condition RPAREN block
+    | FOR LPAREN assignment SEMICOLON condition SEMICOLON assignment RPAREN block
     ;
 
 %%
 
-void yyerror(const char *s) {
-    fprintf(stderr, "Error: %s\n", s);
+int main() {
+  return yyparse();
 }
+>>>>>>> 90626f5584124d0e796dbb166c4b5f61aa4a017c
