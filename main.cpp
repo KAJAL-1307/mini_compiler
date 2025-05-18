@@ -1,5 +1,5 @@
-extern "C" int yyparse();
-
-int main() {
-    return yyparse();
+extern "C" {
+    int yyparse();
+    int yylex();
+    void yyerror(const char *s);
 }

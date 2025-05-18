@@ -22,12 +22,11 @@ typedef struct {
   float fval;
   char* str;
 }
-
+%token INT CHAR BOOL
 %token <ival> NUMBER
 %token <fval> FLOAT
 %token <str> ID
 
-%token INT FLOAT CHAR BOOL
 %token PRINT SCAN
 %token IF ELSE WHILE FOR
 %token EQ NEQ GTE LTE GT LT ASSIGN
