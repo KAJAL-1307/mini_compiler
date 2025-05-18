@@ -50,9 +50,8 @@ The first time you do this, it may download the VS Code Server. Just wait — it
 ✅ 4. Install Required Packages in Ubuntu (WSL)
 Inside your WSL terminal, run these commands once:
 
-bash
-Copy
-Edit
+bash-
+
 sudo apt update
 sudo apt install flex bison g++ make build-essential
 These install:
