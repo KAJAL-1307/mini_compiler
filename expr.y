@@ -1,4 +1,3 @@
-
 %{
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +6,15 @@ int yylex();
 void yyerror(const char *s) {
   printf("Parse error: %s\n", s);
 }
+
+typedef struct {
+  int ival;
+  float fval;
+  char* str;
+} YYSTYPE;
+
+#define YYSTYPE YYSTYPE
+
 %}
 
 %union {
@@ -26,6 +34,8 @@ void yyerror(const char *s) {
 %token SEMICOLON LPAREN RPAREN LBRACE RBRACE
 %token PLUS MINUS MUL DIV
 
+%type <ival> expr
+
 %%
 
 program:
@@ -34,8 +44,8 @@ program:
 
 statements:
     statements statement
-    | statement
-    ;
+  | statement
+  ;
 
 statement:
       declaration SEMICOLON
@@ -54,31 +64,49 @@ declaration:
     ;
 
 assignment:
-      ID ASSIGN expr
+      ID ASSIGN expr {
+        // For now, just print assignment for demo
+        printf("%s = %d\n", $1, $3);
+      }
     ;
 
 expr:
-      expr PLUS expr
-    | expr MINUS expr
-    | expr MUL expr
-    | expr DIV expr
-    | NUMBER
-    | FLOAT
-    | ID
+      expr PLUS expr { $$ = $1 + $3; }
+    | expr MINUS expr { $$ = $1 - $3; }
+    | expr MUL expr { $$ = $1 * $3; }
+    | expr DIV expr {
+        if ($3 == 0) {
+          yyerror("Division by zero");
+          $$ = 0;
+        } else {
+          $$ = $1 / $3;
+        }
+      }
+    | NUMBER { $$ = $1; }
+    | FLOAT { $$ = (int)$1; }   // convert float to int for simplicity
+    | ID { 
+        // For now, just return 0 for variables (no symbol table yet)
+        $$ = 0;
+      }
     ;
 
 print_call:
-    PRINT LPAREN expr RPAREN
+    PRINT LPAREN expr RPAREN {
+      printf("Print: %d\n", $3);
+    }
     ;
 
 scan_call:
-    SCAN LPAREN ID RPAREN
+    SCAN LPAREN ID RPAREN {
+      // For now, no actual scan implementation
+      printf("Scan called for %s\n", $3);
+    }
     ;
 
 if_statement:
     IF LPAREN condition RPAREN block
-    | IF LPAREN condition RPAREN block ELSE block
-    ;
+  | IF LPAREN condition RPAREN block ELSE block
+  ;
 
 condition:
       expr EQ expr
@@ -95,12 +123,11 @@ block:
 
 loop_statement:
     WHILE LPAREN condition RPAREN block
-    | FOR LPAREN assignment SEMICOLON condition SEMICOLON assignment RPAREN block
-    ;
+  | FOR LPAREN assignment SEMICOLON condition SEMICOLON assignment RPAREN block
+  ;
 
 %%
 
 int main() {
   return yyparse();
 }
-
